@@ -1,25 +1,21 @@
-// pages/_app.js
+// src/pages/_app.js
 
 import * as React from 'react';
 import PropTypes from 'prop-types';
 import Head from 'next/head';
-import { ThemeProvider } from '@mui/material/styles';
-import CssBaseline from '@mui/material/CssBaseline';
-import theme from '../src/theme';
+import { CacheProvider } from '@emotion/react';
+import { ThemeProvider, CssBaseline } from '@mui/material';
+import theme from '../theme';
+import createEmotionCache from '../createEmotionCache';
 
-export default function MyApp(props) {
-  const { Component, pageProps } = props;
+// Buat cache Emotion satu kali per sesi browser
+const clientSideEmotionCache = createEmotionCache();
 
-  React.useEffect(() => {
-    // Hapus gaya server-side yang disisipkan oleh Material-UI
-    const jssStyles = document.querySelector('#jss-server-side');
-    if (jssStyles) {
-      jssStyles.parentElement.removeChild(jssStyles);
-    }
-  }, []);
+const MyApp = (props) => {
+  const { Component, emotionCache = clientSideEmotionCache, pageProps } = props;
 
   return (
-    <React.Fragment>
+    <CacheProvider value={emotionCache}>
       <Head>
         <title>My page</title>
         <meta name="viewport" content="minimum-scale=1, initial-scale=1, width=device-width" />
@@ -28,11 +24,14 @@ export default function MyApp(props) {
         <CssBaseline />
         <Component {...pageProps} />
       </ThemeProvider>
-    </React.Fragment>
+    </CacheProvider>
   );
-}
+};
 
 MyApp.propTypes = {
   Component: PropTypes.elementType.isRequired,
+  emotionCache: PropTypes.object,
   pageProps: PropTypes.object.isRequired,
 };
+
+export default MyApp;
